@@ -5,7 +5,7 @@
     --border:#30363d;
     --text:#e6edf3;
     --muted:#8b949e;
-    --accent:#135876;
+    --accent:#247b93;
     --correct:#3fb950;
     --wrong:#f85149;
     --warning:#ffb86b;
@@ -30,7 +30,13 @@ body{
 
 h1{
     text-align:center;
-    margin-bottom:8px;
+    margin:0 0 8px 0;
+    font-style: italic;
+    letter-spacing: 0.6rem;
+}
+
+h2 {
+    margin-top: 0px;
 }
 
 .subtitle{
@@ -42,7 +48,7 @@ h1{
 .card{
     background:var(--panel);
     border:1px solid var(--border);
-    border-radius:18px;
+    border-radius:4px;
     padding:20px;
     margin-bottom:20px;
     box-shadow:0 12px 30px rgba(0,0,0,.35);
@@ -50,10 +56,10 @@ h1{
 
 .question{
     text-align:center;
-    font-size:1.5rem;
+    font-size:1.2rem;
     line-height:1.4;
     margin-bottom:18px;
-    min-height:70px;
+    min-height:30px;
 }
 
 .feedback{
@@ -85,7 +91,7 @@ h1{
 
 button{
     border:none;
-    border-radius:12px;
+    border-radius:4px;
     background:var(--panel2);
     color:var(--text);
     padding:13px 10px;
@@ -96,7 +102,7 @@ button{
 
 button:hover{
     transform:translateY(-2px);
-    background:#2d333b;
+    background:#363d47;
 }
 
 button:active{
@@ -112,7 +118,7 @@ button:active{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-    margin-bottom:16px;
+    margin-top:18px;
 }
 
 .controls button{
@@ -127,7 +133,7 @@ button:active{
 
 .interval-btn.active,
 .direction-btn.active{
-    background:#092c37;
+    background:#103642;
     border:2px solid var(--accent);
 }
 
@@ -135,7 +141,7 @@ button:active{
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:10px;
-    margin-top:18px;
+    margin-bottom:16px;
 }
 
 .warning{
@@ -154,7 +160,7 @@ button:active{
 
 .stat{
     background:var(--panel2);
-    border-radius:14px;
+    border-radius:4px;
     padding:14px;
     text-align:center;
 }
