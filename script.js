@@ -1,18 +1,15 @@
 const NOTES = ["C","D","E","F","G","A","B"];
-
-const SHARP_NOTES = ["C♯","D♯","E♯","F♯","G♯","A♯","B♯"];
-
-const FLAT_NOTES = ["C♭","D♭","E♭","F♭","G♭","A♭","B♭"];
-
+const SHARP_NOTES = ["C♯","D♯","","F♯","G♯","A♯",""];
+const FLAT_NOTES = ["","D♭","E♭","","G♭","A♭","B♭"];
 const ALL_NOTES = [
-    ...SHARP_NOTES,
+    ...FLAT_NOTES,
     ...NOTES,
-    ...FLAT_NOTES
+    ...SHARP_NOTES,
 ];
 
 const NOTE_TO_SEMITONE = {
     "C":0,
-    "B♯":0,
+    // "B♯":0,
 
     "C♯":1,
     "D♭":1,
@@ -23,10 +20,10 @@ const NOTE_TO_SEMITONE = {
     "E♭":3,
 
     "E":4,
-    "F♭":4,
+    // "F♭":4,
 
     "F":5,
-    "E♯":5,
+    // "E♯":5,
 
     "F♯":6,
     "G♭":6,
@@ -42,7 +39,7 @@ const NOTE_TO_SEMITONE = {
     "B♭":10,
 
     "B":11,
-    "C♭":11
+    // "C♭":11
 };
 
 const INTERVALS = [
@@ -93,22 +90,27 @@ let totalCorrectMilliseconds = 0;
 function makeNoteButton(note){
     const btn = document.createElement("button");
     btn.textContent = note;
-    btn.addEventListener("click", ()=>{
-        if(!gameStarted || paused) return;
-        checkAnswer(note);
-    });
+    if (note) {
+        btn.addEventListener("click", ()=>{
+            if(!gameStarted || paused) return;
+            checkAnswer(note);
+        });
+    } else {
+        btn.style.opacity = "0";
+        btn.style.cursor = "default";
+    }
     return btn;
 }
 
 function buildNoteButtons(){
-    SHARP_NOTES.forEach(note=>{
-        sharpRow.appendChild(makeNoteButton(note));
+    FLAT_NOTES.forEach(note=>{
+        flatRow.appendChild(makeNoteButton(note));
     });
     NOTES.forEach(note=>{
         naturalRow.appendChild(makeNoteButton(note));
     });
-    FLAT_NOTES.forEach(note=>{
-        flatRow.appendChild(makeNoteButton(note));
+    SHARP_NOTES.forEach(note=>{
+        sharpRow.appendChild(makeNoteButton(note));
     });
 }
 
@@ -146,7 +148,9 @@ function getEnabledIntervals(){
 }
 
 function randomItem(arr){
-    return arr[Math.floor(Math.random() * arr.length)];
+    let newArr = [];
+    arr.forEach(e=>{if (e) newArr.push(e)})
+    return newArr[Math.floor(Math.random() * newArr.length)];
 }
 
 function getDirection(){
@@ -154,59 +158,39 @@ function getDirection(){
 }
 
 function saveSettings(){
-
     const activeIntervals = [...document.querySelectorAll(".interval-btn")]
         .filter(btn=>btn.dataset.active === "true")
         .map(btn=>btn.dataset.interval);
-
     const direction = getDirection();
-
     localStorage.setItem("intervalTrainerSettings", JSON.stringify({
         activeIntervals,
         direction
     }));
-
 }
 
 function loadSettings(){
-
     const settings = JSON.parse(
         localStorage.getItem("intervalTrainerSettings")
     );
-
     if(!settings) return;
-
     document.querySelectorAll(".interval-btn").forEach(btn=>{
-
         const active = settings.activeIntervals.includes(btn.dataset.interval);
-
         btn.dataset.active = active;
         btn.classList.toggle("active", active);
-
     });
-
     document.querySelectorAll(".direction-btn").forEach(btn=>{
-
         btn.classList.remove("active");
-
         if(btn.dataset.direction === settings.direction){
             btn.classList.add("active");
         }
-
     });
-
 }
 
 function calculateAnswer(root, interval, direction){
-
     const letters = ["C","D","E","F","G","A","B"];
-
     const rootLetter = root[0];
-
     const rootIndex = letters.indexOf(rootLetter);
-
     let targetLetterIndex;
-
     if(direction === "above"){
         targetLetterIndex =
             (rootIndex + (interval.degree - 1)) % 7;
@@ -214,52 +198,33 @@ function calculateAnswer(root, interval, direction){
         targetLetterIndex =
             (rootIndex - (interval.degree - 1) + 700) % 7;
     }
-
     const targetLetter = letters[targetLetterIndex];
-
     const rootSemi = NOTE_TO_SEMITONE[root];
-
     let targetSemi;
-
     if(direction === "above"){
         targetSemi = (rootSemi + interval.semitones) % 12;
     } else {
         targetSemi = (rootSemi - interval.semitones + 120) % 12;
     }
-
     return ALL_NOTES.filter(note=>{
-
-        return note[0] === targetLetter &&
-            NOTE_TO_SEMITONE[note] === targetSemi;
-
+        return NOTE_TO_SEMITONE[note] === targetSemi;
     });
-
 }
 
 function generateQuestion(){
-
     const enabled = getEnabledIntervals();
-
     if(enabled.length === 0){
-
         questionEl.innerHTML =
             "Select at least one interval.";
-
         return;
-
     }
 
     feedbackEl.textContent = "";
     feedbackEl.className = "feedback";
-
     const root = randomItem(ALL_NOTES);
-
     const interval = randomItem(enabled);
-
     const mode = getDirection();
-
     let direction;
-
     if(mode === "both"){
         direction = Math.random() > .5
             ? "above"
@@ -267,7 +232,6 @@ function generateQuestion(){
     } else {
         direction = mode;
     }
-
     const answer =
         calculateAnswer(root, interval, direction);
 
@@ -277,240 +241,154 @@ function generateQuestion(){
         direction,
         answer
     };
-
     questionEl.innerHTML = `
         What is a <strong>${interval.name}</strong>
         ${direction}
         <strong>${root}</strong>?
     `;
-
 }
 
 function checkAnswer(note){
-
     if(currentQuestion.answer.includes(note)){
-
         correct++;
-
         totalCorrectMilliseconds += currentMilliseconds;
-
         renderAverageTime();
-
         currentMilliseconds = 0;
-
         renderCurrentTimer();
         updateStats();
-
         feedbackEl.textContent = "Correct!";
         feedbackEl.className = "feedback correct";
-
         setTimeout(generateQuestion, 700);
-
     } else {
-
         incorrect++;
-
         updateStats();
-
         feedbackEl.textContent = "Incorrect. Try again.";
         feedbackEl.className = "feedback wrong";
-
     }
-
 }
 
 function updateStats(){
-
     document.getElementById("correctCount").textContent =
         correct;
-
     document.getElementById("incorrectCount").textContent =
         incorrect;
-
     const total = correct + incorrect;
-
     const accuracy = total === 0
         ? 0
         : Math.round((correct / total) * 100);
-
     document.getElementById("accuracy").textContent =
         accuracy + "%";
-
 }
 
 function formatTime(milliseconds){
-
     const seconds = Math.floor(milliseconds / 1000);
-
     const hundredths = Math.floor((milliseconds % 1000) / 10);
-
     return `${seconds}.${String(hundredths).padStart(2,"0")}`;
-
 }
 
 function renderCurrentTimer(){
-
     document.getElementById("timer").textContent =
         formatTime(currentMilliseconds);
-
 }
 
 function renderAverageTime(){
-
     if(correct === 0){
-
         document.getElementById("averageTime").textContent =
             "00:00";
-
         return;
-
     }
-
     const avg = Math.round(totalCorrectMilliseconds / correct);
-
     document.getElementById("averageTime").textContent =
         formatTime(avg);
-
 }
 
 function updateTimer(){
-
     currentMilliseconds += 10;
-
     renderCurrentTimer();
-
 }
 
 function startTimer(){
-
     clearInterval(timerInterval);
-
     timerInterval = setInterval(()=>{
-
         if(!paused){
             updateTimer();
         }
-
     },10);
-
 }
 
 document.querySelectorAll(".direction-btn").forEach(btn=>{
-
     btn.addEventListener("click", ()=>{
-
         document.querySelectorAll(".direction-btn")
             .forEach(b=>b.classList.remove("active"));
-
         btn.classList.add("active");
-
         saveSettings();
-
     });
-
 });
 
 document.getElementById("selectAll")
 .addEventListener("click", ()=>{
-
     document.querySelectorAll(".interval-btn")
         .forEach(btn=>{
-
             btn.dataset.active = "true";
-
             btn.classList.add("active");
-
         });
-
     warningEl.textContent = "";
-
     saveSettings();
-
 });
 
 document.getElementById("deselectAll")
 .addEventListener("click", ()=>{
-
     document.querySelectorAll(".interval-btn")
         .forEach(btn=>{
-
             btn.dataset.active = "false";
-
             btn.classList.remove("active");
-
         });
-
     validateIntervals();
     saveSettings();
-
 });
 
 document.getElementById("startGame")
 .addEventListener("click", ()=>{
-
     if(getEnabledIntervals().length === 0){
-
         warningEl.textContent =
             "Please select at least one interval.";
-
         return;
-
     }
-
     gameStarted = true;
-
     paused = false;
-
     currentMilliseconds = 0;
-
     renderCurrentTimer();
     generateQuestion();
     startTimer();
-
 });
 
 document.getElementById("pauseGame")
 .addEventListener("click", ()=>{
-
     if(!gameStarted) return;
-
     paused = !paused;
-
     document.getElementById("pauseGame").textContent =
         paused
             ? "Resume Timer"
             : "Pause Timer";
-
 });
 
 document.getElementById("resetGame")
 .addEventListener("click", ()=>{
-
     correct = 0;
     incorrect = 0;
-
     currentMilliseconds = 0;
-
     totalCorrectMilliseconds = 0;
-
     paused = false;
-
     gameStarted = false;
-
     clearInterval(timerInterval);
-
     document.getElementById("pauseGame").textContent =
         "Pause Timer";
-
     renderCurrentTimer();
     renderAverageTime();
     updateStats();
-
     feedbackEl.textContent = "";
-
     questionEl.innerHTML =
         "Press <strong>Start Game</strong> to begin.";
-
 });
 
 buildNoteButtons();
