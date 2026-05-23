@@ -354,22 +354,18 @@ document.getElementById("startGame")
             "Please select at least one interval.";
         return;
     }
-    gameStarted = true;
-    paused = false;
-    currentMilliseconds = 0;
-    renderCurrentTimer();
-    generateQuestion();
-    startTimer();
-});
-
-document.getElementById("pauseGame")
-.addEventListener("click", ()=>{
-    if(!gameStarted) return;
-    paused = !paused;
-    document.getElementById("pauseGame").textContent =
-        paused
-            ? "Resume Timer"
-            : "Pause Timer";
+    if (!gameStarted || paused) {
+        gameStarted = true;
+        paused = false;
+        renderCurrentTimer();
+        generateQuestion();
+        startTimer();
+        document.getElementById("startGame").textContent = "Pause";
+    } else {
+        gameStarted = false;
+        paused = true;
+        document.getElementById("startGame").textContent = "Resume";
+    }
 });
 
 document.getElementById("resetGame")
@@ -381,14 +377,13 @@ document.getElementById("resetGame")
     paused = false;
     gameStarted = false;
     clearInterval(timerInterval);
-    document.getElementById("pauseGame").textContent =
-        "Pause Timer";
     renderCurrentTimer();
     renderAverageTime();
     updateStats();
+    document.getElementById("startGame").textContent = "Start";
     feedbackEl.textContent = "";
     questionEl.innerHTML =
-        "Press <strong>Start Game</strong> to begin.";
+        "Press <strong>Start</strong> to begin.";
 });
 
 buildNoteButtons();
